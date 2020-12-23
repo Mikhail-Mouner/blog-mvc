@@ -5,14 +5,29 @@ class Application
 {
 
     private $container = [] ;
+    private static $instance ;
 
-    public function __construct(File $file)
+    private function __construct(File $file)
     {
         $this->share('file',$file);
         $this->registerClasses();
         $this->loaderHelper();
     }
 
+    /**
+     * Get application instance
+     * 
+     * @param \System\File $file
+     * @return \System\Application
+     *   */
+    public static function getInstance($file = NULL)
+    {
+        if (is_null(static::$instance))
+            static::$instance = new static($file);
+        
+        return static::$instance;
+    }
+    
     /**
      * Register Classes in splauto load register
      * 
@@ -32,9 +47,9 @@ class Application
     public function load($class)
     {
         if (strpos($class,'App') === 0)
-            $file = $this->file->to($class.'.php');
+            $file = $class.'.php';
         else
-            $file = $this->file->toVendor($class.'.php');
+            $file = 'vendor/'.$class.'.php';
         
         if ( $this->file->exists($file) ) 
             $this->file->require($file);
@@ -48,8 +63,7 @@ class Application
      *   */
     public function loaderHelper()
     {
-        $file = $this->file->toVendor('helpers.php');
-        $this->file->require($file);
+        $file = $this->file->require('vendor/helpers.php');
     }
 
     
@@ -141,14 +155,15 @@ class Application
     private function coreClasses()
     {
         return [
-            'request'    =>  'System\\Http\\Request',
-            'response'   =>  'System\\Http\\Response',
-            'session'    =>  'System\\Session',
-            'cookie'     =>  'System\\Cookie',
-            'load'   =>  'System\\Loader',
-            'html'   =>  'System\\Html',
-            'db'   =>  'System\\Database',
-            'view'   =>  'System\\View\\ViewFactory'
+            'request'   =>  'System\\Http\\Request',
+            'response'  =>  'System\\Http\\Response',
+            'session'   =>  'System\\Session',
+            'route'     =>  'System\\Route',
+            'cookie'    =>  'System\\Cookie',
+            'load'      =>  'System\\Loader',
+            'html'      =>  'System\\Html',
+            'db'        =>  'System\\Database',
+            'view'      =>  'System\\View\\ViewFactory'
         ];
     }
     
@@ -161,6 +176,8 @@ class Application
     {
         $this->session->start();
         $this->request->prepareUrl();
+        $this->file->require('App\index.php');
+        list($controller, $method, $arrguments) = $this->route->getProperRoute();
     }
 
 
