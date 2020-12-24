@@ -85,6 +85,7 @@ class Loader
      *   */
     private function getControllerName($controller)
     {
+        $controller = str_replace('/','\\',$controller); 
         return 'App\\Controllers\\' . $controller . 'Controller';
     }
     
