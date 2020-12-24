@@ -52,7 +52,7 @@ class Application
             $file = 'vendor/'.$class.'.php';
         
         if ( $this->file->exists($file) ) 
-            $this->file->require($file);
+            $this->file->call($file);
     
     }
     
@@ -63,7 +63,7 @@ class Application
      *   */
     public function loaderHelper()
     {
-        $file = $this->file->require('vendor/helpers.php');
+        $file = $this->file->call('vendor/helpers.php');
     }
 
     
@@ -176,7 +176,7 @@ class Application
     {
         $this->session->start();
         $this->request->prepareUrl();
-        $this->file->require('App\index.php');
+        $this->file->call('App\index.php');
         list($controller, $method, $arrguments) = $this->route->getProperRoute();
     }
 
