@@ -178,7 +178,9 @@ class Application
         $this->request->prepareUrl();
         $this->file->call('App\index.php');
         list($controller, $method, $arrguments) = $this->route->getProperRoute();
-        $this->load->action($controller, $method, $arrguments);
+        $output = (string)$this->load->action($controller, $method, $arrguments);
+        $this->response->setOutput($output);
+        $this->response->send();
     }
 
 
