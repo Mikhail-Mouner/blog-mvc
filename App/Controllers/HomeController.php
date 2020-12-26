@@ -7,8 +7,16 @@ class HomeController extends Controller
 {
     
     public function index() {
-        $this->db;
-        return $this->view->render('home');
+        /*
+        return $this->db->table('users')
+            ->data([
+                'first_name' => 'Mi5a',
+                'email' => 'mi5a@yahoo.com',
+                ])
+            ->insert()->lastID();
+        */
+        //$this->db->query('TRUNCATE `users`');
+        //return $this->view->render('home');
     }
 
 }
