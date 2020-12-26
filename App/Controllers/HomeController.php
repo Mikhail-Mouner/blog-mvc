@@ -8,14 +8,19 @@ class HomeController extends Controller
     
     public function index() {
         /*
-        return $this->db->table('users')
-            ->data([
-                'first_name' => 'Mi5a',
-                'email' => 'mi5a@yahoo.com',
-                ])
-            ->insert()->lastID();
+        $id = $this->db->table('users')
+                ->data([
+                    'first_name' => 'Mi5a',
+                    'email' => 'mi5a@yahoo.com',
+                    ])
+                ->insert()->lastID();
         */
-        //$this->db->query('TRUNCATE `users`');
+        
+        //pre($this->db->select('id,email')->from('users')->orderBy('id','DESC')->fetchAll());
+        //$this->db->query('INSERT INTO users SET first_name = ?, email = ?','Mi5a','mi5a@yahoo.com');
+        //$this->db->table('users')->truncate();
+        $users = $this->load->model('Users');
+        pre($users->all());
         //return $this->view->render('home');
     }
 

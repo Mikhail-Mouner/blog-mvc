@@ -13,6 +13,12 @@ class Database
     private $bindings = [];
     private $lastID;
     private $wheres = [];
+    private $selects = [];
+    private $joins = [];
+    private $orderBy = [] ;
+    private $limit ;
+    private $offset ;
+    private $rows = 0 ;
     
     public function __construct(Application $app) {
         $this->application = $app;
@@ -92,6 +98,126 @@ class Database
         $this->wheres[] = $sql;
         return $this;
     }
+
+    /**
+     * Set SELECT clause
+     * 
+     * @param mixed $select
+     * @return $this
+     *   */
+    public function select($select) {
+        $this->selects[] = $select;
+        return $this;
+    }
+
+    /**
+     * Set join clause
+     * 
+     * @param mixed $join
+     * @return $this
+     *   */
+    public function join($join) {
+        $this->joins[] = $join;
+        return $this;
+    }
+
+    /**
+     * Set orderBy clause
+     * 
+     * @param string $column
+     * @param string $sort
+     * @return $this
+     *   */
+    public function orderBy($column, $sort = 'ASC') {
+        $this->orderBy = [$column, $sort];
+        return $this;
+    }
+
+    /**
+     * Set limit & offset clause
+     * 
+     * @param mixed $limit
+     * @param mixed $offset
+     * @return $this
+     *   */
+    public function limit($limit, $offset = 0) {
+        $this->limit = $limit;
+        $this->offset = $offset;
+        return $this;
+    }
+
+    /**
+     * Fetch table (one record)
+     * 
+     * @return \stdClass | null
+     *   */
+    public function fetch($table = null) {
+        if ( !is_null($table) )
+            $this->table($table);
+
+        $sql = $this->fetchStatement();
+        
+        $result = $this->query($sql, $this->bindings)->fetch();
+        $this->reset();
+        return $result;
+    }
+
+    /**
+     * Fetch All record table (all record)
+     * 
+     * @return \stdClass | null
+     *   */
+    public function fetchAll($table = null) {
+        if ( !is_null($table) )
+            $this->table($table);
+
+        $sql = $this->fetchStatement();
+        $stmt = $this->query($sql, $this->bindings);
+        $result = $stmt->fetchAll();
+        $this->rows = $stmt->rowCount();
+        $this->reset();
+        return $result;
+    }
+    
+
+    /**
+     * Get total rows from last fetsh all statement
+     * 
+     * @return int
+     *   */
+    public function rows() {
+        return $this->rows;
+    }
+    
+
+    /**
+     * Perpare Select Statement
+     * 
+     * @return string
+     *   */
+    private function fetchStatement() {
+        $sql = 'SELECT ';
+        if ( $this->selects )
+            $sql .= implode(',',$this->selects);
+        else
+            $sql .= '*';
+
+        $sql .= ' FROM '. $this->table.' ';
+        if ( $this->wheres )
+            $sql .= ' WHERE '. implode(' ', $this->wheres);
+
+        if ( $this->orderBy )
+            $sql .= ' ORDER BY '. implode(' ', $this->orderBy);
+
+        if ( $this->limit )
+            $sql .= ' limit '. $this->limit;
+ 
+        if ( $this->offset )
+            $sql .= ' OFFSET '. $this->offset;
+ 
+
+        return $sql;
+    }
     
     /**
      * Set the Data that will be stored in database table
@@ -127,6 +253,7 @@ class Database
 
         $this->query($sql, $this->bindings);
         $this->lastID = $this->connection()->lastInsertId();
+        $this->reset();
         return $this;
     }   
     
@@ -143,11 +270,31 @@ class Database
 
         $sql .= $this->setFields();
 
-        if ( !is_null($this->where) )
-            $sql .= ' WHERE '. implode('', $this->wheres);
+        if ( $this->wheres )
+            $sql .= ' WHERE '. implode(' ', $this->wheres);
 
         $this->query($sql, $this->bindings);
+        $this->reset();
         return $this;
+    }   
+    
+    /**
+     * Update the Data to database table
+     * 
+     * @return $this
+     *   */
+    public function delete($table = null) {
+        if ( !is_null($table) )
+            $this->table($table);
+
+        $sql = "DELETE FROM ". $this->table ." ";
+
+
+        if ( $this->wheres )
+            $sql .= ' WHERE '. implode(' ', $this->wheres);
+
+        $this->query($sql, $this->bindings);
+        $this->reset();
     }   
     
     /**
@@ -158,9 +305,9 @@ class Database
      *   */
     private function addToBindings($value) {
         if ( is_array($value))
-            $this->bindings[] = array_merge($this->bindings, $value);
+            $this->bindings = array_merge($this->bindings, $value);
         else
-            $this->bindings[] = $value;
+            $this->bindings[] = $value;  
     }
     
     /**
@@ -196,17 +343,52 @@ class Database
         $sql = array_shift($bindings);
         if (count($bindings) == 1 && is_array($bindings[0]))
             $bindings = $bindings[0];
-        try{    
+            
+        try{
             $query =$this->connection()->prepare($sql);
             foreach ($bindings as $key => $value) {
                 $query->bindValue($key+1, _e($value));
             }
             $query->execute();
         }catch (PDOException $e){
+            pre($sql);
             die('Error in query: '.$e->getMessage());
         }
 
         return $query;
     }
+    
+    /**
+     * Empty table
+     * 
+     * @param string $table
+     * @return $this
+     *   */
+    public function truncate($table = null) {
+        if ( !is_null($table) )
+            $this->table($table);
+
+        $sql = "TRUNCATE `". $this->table ."` ";
+
+        $this->query($sql);
+    } 
+    
+    /**
+     * Empty table
+     * 
+     * @param string $table
+     * @return $this
+     *   */
+    private function reset() {
+        $this->table    = '' ;
+        $this->data     = [] ;
+        $this->bindings = [] ;
+        $this->wheres   = [] ;
+        $this->selects  = [] ;
+        $this->joins    = [] ;
+        $this->orderBy  = [] ;
+        $this->limit    = '' ;
+        $this->offset   =  0 ;
+    } 
 
 }
