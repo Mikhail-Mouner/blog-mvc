@@ -163,6 +163,7 @@ class Application
             'load'      =>  'System\\Loader',
             'html'      =>  'System\\Html',
             'db'        =>  'System\\Database',
+            'url'      =>  'System\\Url',
             'view'      =>  'System\\View\\ViewFactory'
         ];
     }

@@ -1,4 +1,6 @@
-<?php 
+<?php
+use System\Application;
+
 if (!function_exists('pre')) {
     function pre($var = NULL,$exit_status = 0)
     {
@@ -21,4 +23,12 @@ if (!function_exists('_e')) {
     {
         return htmlspecialchars($value);
     } 
-} 
+}
+
+if (!function_exists('assets')) {
+    function assets($path)
+    {
+        $app = Application::getInstance();
+        return $app->url->link('public/'.$path);
+    } 
+}
