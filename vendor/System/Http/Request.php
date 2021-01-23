@@ -44,7 +44,7 @@ class Request
      * @param string $default
      * @return mixed
      *   */
-    public function get($key, $default)
+    public function get($key, $default = null)
     {
         return array_get($_GET, $key, $default);
     }
@@ -56,7 +56,7 @@ class Request
      * @param string $default
      * @return mixed
      *   */
-    public function post($key, $default)
+    public function post($key, $default = null)
     {
         return array_get($_POST, $key, $default);
     }

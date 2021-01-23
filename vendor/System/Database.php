@@ -346,12 +346,14 @@ class Database
             
         try{
             $query =$this->connection()->prepare($sql);
-            foreach ($bindings as $key => $value) {
-                $query->bindValue($key+1, _e($value));
+            $key = 1;
+            foreach ($bindings as  $value) {        
+                //$query->bindValue($key+1, _e($value));
+                $query->bindValue($key++, _e($value));
             }
             $query->execute();
         }catch (PDOException $e){
-            pre($sql);
+            pre($sql);pre($bindings);
             die('Error in query: '.$e->getMessage());
         }
 

@@ -3,7 +3,8 @@ namespace System;
 
 abstract class Controller
 {
-    protected $application;
+    protected $application ;
+    protected $errors = [] ;
     
     public function __construct(Application $app) {
         $this->application = $app;

@@ -32,3 +32,11 @@ if (!function_exists('assets')) {
         return $app->url->link('public/'.$path);
     } 
 }
+
+if (!function_exists('url')) {
+    function url($path)
+    {
+        $app = Application::getInstance();
+        return $app->url->link($path);
+    } 
+}
